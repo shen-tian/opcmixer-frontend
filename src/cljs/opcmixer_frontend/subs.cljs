@@ -21,3 +21,13 @@
  :pix
  (fn [db _]
    (:pix db)))
+
+(re-frame/reg-sub
+ :ch-names
+ (fn [db _]
+   (keys (:app-log db))))
+
+(re-frame/reg-sub
+ :chan-info
+ (fn [db [_ name]]
+   (get-in db [:app-log (keyword name)])))

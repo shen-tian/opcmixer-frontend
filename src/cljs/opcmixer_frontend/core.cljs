@@ -6,7 +6,7 @@
               [opcmixer-frontend.views :as views]
               [opcmixer-frontend.config :as config]))
 
-(defonce do-timer (js/setInterval #(re-frame/dispatch [:get-frame]) 100))
+#_(defonce do-timer (js/setInterval #(re-frame/dispatch [:get-frame]) 100))
 
 (defn dev-setup []
   (when config/debug?

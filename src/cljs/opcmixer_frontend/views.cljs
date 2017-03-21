@@ -4,45 +4,41 @@
 
 (defn log-panel
   []
-  (let [log (re-frame/subscribe [:pix])]
-    [:p @log]))
-
-(defn channel-panel
-  []
-  (fn []
+  (let [log @(re-frame/subscribe [:app-log])]
     [:div
-     [:p "Channel x"]
-     [:input {:type "checkbox"}]
-     [:p "Levels"]
-     [:input {:type "range"}]
-     [:p "Hue"]
-     [:input {:type "range"
-              :min 0
-              :max 255
-              :value (* 255@(re-frame/subscribe [:color]))
-              :on-change #(re-frame/dispatch 
-                          [:set-color 
-                           (/ (-> % .-target .-value) 255)])}]
-     [:br]
-     [:svg {:width 100
-            :height 100
-            :viewBox "0 0 100 100"}
-      [:circle {:cx 50
-                :cy 50
-                :r 50
-                :style {:fill @(->> @(re-frame/subscribe [:pix])
-                                    (apply col/rgba)
-                                    col/as-css)}}]]]))
+     [:p (str log)]]))
+
+(defn update-level
+  [ch-name new-val]
+  (re-frame/dispatch [:change-level (keyword ch-name) new-val]))
+
+(defn toggle-show
+  [ch-name]
+  (re-frame/dispatch [:toggle-show (keyword ch-name)]))
+
+(defn channel-comp
+  [name]
+  (let [ch (re-frame/subscribe [:chan-info name])]
+    (fn [name]
+      [:div
+       [:p (:name @ch)]
+       [:input {:type "checkbox"
+                :checked (:show @ch)
+                :on-change #(toggle-show name)}]
+       [:input {:type "range"
+                :value (:level @ch)
+                :on-change #(update-level name (-> % .-target .-value))}]])))
 
 (defn main-panel []
-  (let [name (re-frame/subscribe [:name])]
+  (let [ch-names (re-frame/subscribe [:ch-names])]
     (fn []
       [:div 
-       [:h1 "Hello from " @name]
+       [:h1 "OPC Mixer"]
        [:button {:type "button"
-                 :on-click #(re-frame/dispatch [:get-frame])} "Refresh"]
+                 :on-click #(re-frame/dispatch [:get-frame])} "Fetch"]
        [:button {:type "button"
-                 :on-click #(re-frame/dispatch [:set-color (rand)])}
-        "Color"]
-       [channel-panel]
+                 :on-click #(re-frame/dispatch [:post-frame])} "Send"]
+       (for [ch @ch-names]
+         ^{:key ch}
+         [channel-comp ch])
        [log-panel]])))

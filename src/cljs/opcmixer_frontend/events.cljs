@@ -9,33 +9,48 @@
  (fn [_ _]
    db/default-db))
 
-(re-frame/reg-event-db
- :say-hi
- (fn [db _]
-   (assoc db :app-log (rand))))
-
-(re-frame/reg-event-db
- :set-color
- (fn [db [_ hue]]
-   (assoc db :hue hue)))
 
 (re-frame/reg-event-db
  :process-blah-response
  (fn [db [_ x]]
-   (do 
-     (let [pix-1 (->> x
-              :1490085852662
-              :frame
-              (take 3))]
-       ;;(prn pix-1)
-       (assoc db :pix pix-1)))))
+   (assoc db :app-log x)))
+
+(re-frame/reg-event-db
+ :print-response
+ (fn [db [_ x]]
+   (prn x)
+   db))
+
+(re-frame/reg-event-db
+ :change-level
+ (fn [db [_ channel new-level]]
+   (assoc-in db [:app-log channel :level] new-level)))
+
+(re-frame/reg-event-db
+ :toggle-show
+ (fn [db [_ channel]]
+   (update-in db [:app-log channel :show] not)))
 
 (re-frame/reg-event-fx
  :get-frame
  (fn [{:keys [db]} [_ a]]
    {:http-xhrio {:method :get
-                 :uri "http://localhost:8080/"
-                 :response-format (ajax/json-response-format {:keywords? true})
+                 :uri "http://localhost:8080/controls/"
+                 :response-format (ajax/json-response-format 
+                                   {:keywords? true})
                  :on-success  [:process-blah-response]
                  :on-failure  [:process-blah-response]}
     :db (assoc db :flag true)}))
+
+(re-frame/reg-event-fx
+ :post-frame
+ (fn [{:keys [db]} [_ a]]
+   {:http-xhrio {:method :post
+                 :uri "http://localhost:8080/controls/"
+                 :params @(re-frame/subscribe [:app-log])
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format 
+                                   {:keywords? true})
+                 :on-success  [:print-response]
+                 :on-failure  [:print-response]}
+    :db (assoc db :flag false)}))
