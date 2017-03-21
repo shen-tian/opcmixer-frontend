@@ -1,5 +1,4 @@
 # opcmixer-frontend
-<<<<<<< HEAD
 
 A [re-frame](https://github.com/Day8/re-frame) application designed to ... well, that part is up to you.
 
@@ -25,5 +24,3 @@ To compile clojurescript to javascript:
 lein clean
 lein cljsbuild once min
 ```
-=======
->>>>>>> 10fbfcc888254d57d048ef8f0143a00067f7bbe8
